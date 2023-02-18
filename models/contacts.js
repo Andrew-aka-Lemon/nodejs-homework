@@ -1,4 +1,8 @@
-// const fs = require('fs/promises')
+const fs = require('fs/promises');
+const path = require('path');
+const { nanoid } = require('nanoid');
+
+const contactsPath = path.resolve('db/contacts.json');
 
 const listContacts = async () => {
   let contacts = [];
@@ -40,8 +44,7 @@ const removeContact = async contactId => {
 
 const addContact = async body => {
   const id = nanoid();
-  const { name, email, phone } = body;
-  const newContact = { id, name, email, phone };
+  const newContact = { ...body, id };
 
   const contacts = await listContacts();
 

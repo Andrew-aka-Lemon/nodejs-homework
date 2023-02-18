@@ -55,7 +55,24 @@ const addContact = async body => {
   return newContacts;
 };
 
-const updateContact = async (contactId, body) => {};
+const updateContact = async (contactId, body) => {
+  const contacts = await listContacts();
+
+  const index = contacts.findIndex(contact => contact.id === contactId);
+
+  if (index === -1) {
+    console.log('There is no contact with such ID !');
+    return null;
+  }
+
+  const updatedContact = { contactId, ...body };
+
+  contacts.splice(index, 1, updatedContact);
+
+  fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+
+  return updatedContact;
+};
 
 module.exports = {
   listContacts,

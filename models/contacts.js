@@ -2,7 +2,7 @@ const fs = require('fs/promises');
 const path = require('path');
 const { nanoid } = require('nanoid');
 
-const contactsPath = path.resolve('db/contacts.json');
+const contactsPath = path.join(__dirname, 'contacts.json');
 
 const listContacts = async () => {
   let contacts = [];
@@ -19,7 +19,7 @@ const getContactById = async contactId => {
   const contacts = await listContacts();
   const choosenContact = contacts.filter(contact => contact.id === contactId);
   if (choosenContact.length === 0) {
-    console.log('There is no book with such ID !');
+    console.log('There is no contact with such ID !');
     return null;
   }
   return choosenContact;

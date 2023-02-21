@@ -1,7 +1,7 @@
 const Joi = require('Joi');
 
 const contacts = require('../../models/contacts');
-const { HttpError } = require('../../helpers');
+const { HttpError, ctrlWrapper } = require('../../helpers');
 
 const schema = Joi.object({
   name: Joi.string().required(),
@@ -11,7 +11,6 @@ const schema = Joi.object({
 
 async function getAll(req, res) {
   const contactsAll = await contacts.listContacts();
-
   res.status(200).json(contactsAll);
 }
 
@@ -85,9 +84,9 @@ async function updateById(req, res, next) {
 }
 
 module.exports = {
-  getAll,
-  getById,
-  addContact,
-  removeById,
-  updateById,
+  getAll: ctrlWrapper(getAll),
+  getById: ctrlWrapper(getById),
+  addContact: ctrlWrapper(addContact),
+  removeById: ctrlWrapper(removeById),
+  updateById: ctrlWrapper(updateById),
 };

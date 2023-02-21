@@ -5,14 +5,12 @@ const { nanoid } = require('nanoid');
 const contactsPath = path.join(__dirname, 'contacts.json');
 
 const listContacts = async () => {
-  let contacts = [];
   try {
-    contacts = JSON.parse(await fs.readFile(contactsPath, 'utf8'));
+    const contacts = JSON.parse(await fs.readFile(contactsPath, 'utf8'));
+    return contacts;
   } catch (error) {
     console.log("Can't read Contacts!");
   }
-
-  return contacts;
 };
 
 const getContactById = async contactId => {

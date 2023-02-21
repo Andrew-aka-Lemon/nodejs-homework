@@ -28,23 +28,24 @@ const getContactById = async contactId => {
 const removeContact = async contactId => {
   const contacts = await listContacts();
 
-  const withoutChoosenContact = contacts.filter(
-    contact => contact.id !== contactId
-  );
+  const index = contacts.findIndex(contact => contact.id === contactId);
 
-  if (contacts.length === withoutChoosenContact.length) {
+  if (index === -1) {
     console.log('There is no contact with such ID !');
     return null;
   }
+  const deletedContact = contacts[index];
 
-  fs.writeFile(contactsPath, JSON.stringify(withoutChoosenContact, null, 2));
+  contacts.splice(index, 1);
 
-  return withoutChoosenContact;
+  fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+
+  return deletedContact;
 };
 
 const addContact = async body => {
   const id = nanoid();
-  const newContact = { ...body, id };
+  const newContact = { id, ...body };
 
   const contacts = await listContacts();
 
@@ -52,7 +53,7 @@ const addContact = async body => {
 
   fs.writeFile(contactsPath, JSON.stringify(newContacts, null, 2));
 
-  return newContacts;
+  return newContact;
 };
 
 const updateContact = async (contactId, body) => {

@@ -66,7 +66,7 @@ const updateContact = async (contactId, body) => {
     return null;
   }
 
-  const updatedContact = { contactId, ...body };
+  const updatedContact = { id: contactId, ...body };
 
   contacts.splice(index, 1, updatedContact);
 

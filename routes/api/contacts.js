@@ -61,7 +61,30 @@ router.delete('/:contactId', async (req, res, next) => {
 });
 
 router.put('/:contactId', async (req, res, next) => {
-  res.json({ message: 'template message' });
+  try {
+    const contactById = await contacts.getContactById(req.params.contactId);
+
+    if (contactById === null) {
+      throw HttpError(404, 'Not found');
+    }
+
+    const { error } = schema.validate(req.body);
+
+    if (error) {
+      throw HttpError(400, 'missing required name field');
+    }
+
+    const updatedContact = await contacts.updateContact(
+      req.params.contactId,
+      req.body
+    );
+
+    console.log(updatedContact);
+
+    res.status(200).json(updatedContact);
+  } catch (error) {
+    next(error);
+  }
 });
 
 module.exports = router;

@@ -1,7 +1,7 @@
 const Joi = require('Joi');
 
-const contacts = require('../../models/contacts');
-const { HttpError, ctrlWrapper } = require('../../helpers');
+const contacts = require('../models/contactsMethods');
+const { HttpError, ctrlWrapper } = require('../helpers');
 
 const schema = Joi.object({
   name: Joi.string().required(),

@@ -6,7 +6,7 @@ const contactsSchema = new Schema(
     name: {
       type: String,
       required: true,
-      minlength: 2,
+      minLength: 2,
     },
     email: {
       type: String,

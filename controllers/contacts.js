@@ -1,13 +1,14 @@
-const contacts = require('../models/contactsMethods');
 const { HttpError, ctrlWrapper } = require('../helpers');
+const { Contact } = require('../models/contactsSchema');
 
 async function getAll(req, res) {
-  const contactsAll = await contacts.listContacts();
+  const contactsAll = await Contact.find();
+
   res.status(200).json(contactsAll);
 }
 
 async function getById(req, res, next) {
-  const contactById = await contacts.getContactById(req.params.contactId);
+  const contactById = await Contact.findById(req.params.contactId);
 
   if (contactById === null) {
     throw HttpError(404, 'Not found');
@@ -16,13 +17,15 @@ async function getById(req, res, next) {
 }
 
 async function addContact(req, res, next) {
-  const newContact = await contacts.addContact(req.body);
+  const newContact = await Contact.create(req.body);
 
   res.status(201).json(newContact);
 }
 
 async function removeById(req, res, next) {
-  const contactById = await contacts.removeContact(req.params.contactId);
+  const contactById = await Contact.findOneAndRemove({
+    _id: req.params.contactId,
+  });
 
   if (contactById === null) {
     throw HttpError(404, 'Not found');
@@ -31,12 +34,23 @@ async function removeById(req, res, next) {
 }
 
 async function updateById(req, res, next) {
-  const updatedContact = await contacts.updateContact(
-    req.params.contactId,
+  const updatedContact = await Contact.findOneAndUpdate(
+    {
+      _id: req.params.contactId,
+    },
     req.body
   );
 
-  console.log(updatedContact);
+  res.status(200).json(updatedContact);
+}
+
+async function updateFavoriteById(req, res, next) {
+  const updatedContact = await Contact.findOneAndUpdate(
+    {
+      _id: req.params.contactId,
+    },
+    { favorite: req.body.favorite }
+  );
 
   res.status(200).json(updatedContact);
 }
@@ -47,4 +61,5 @@ module.exports = {
   addContact: ctrlWrapper(addContact),
   removeById: ctrlWrapper(removeById),
   updateById: ctrlWrapper(updateById),
+  updateFavoriteById: ctrlWrapper(updateFavoriteById),
 };

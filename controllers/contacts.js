@@ -1,5 +1,5 @@
 const { HttpError, ctrlWrapper } = require('../helpers');
-const { Contact } = require('../models/contactsSchema');
+const { Contact } = require('../models/contacts');
 
 async function getAll(req, res) {
   const contactsAll = await Contact.find();
@@ -7,7 +7,7 @@ async function getAll(req, res) {
   res.status(200).json(contactsAll);
 }
 
-async function getById(req, res, next) {
+async function getById(req, res) {
   const contactById = await Contact.findById(req.params.contactId);
 
   if (contactById === null) {
@@ -16,13 +16,13 @@ async function getById(req, res, next) {
   res.status(200).json(contactById);
 }
 
-async function addContact(req, res, next) {
+async function addContact(req, res) {
   const newContact = await Contact.create(req.body);
 
   res.status(201).json(newContact);
 }
 
-async function removeById(req, res, next) {
+async function removeById(req, res) {
   const contactById = await Contact.findOneAndRemove({
     _id: req.params.contactId,
   });
@@ -33,7 +33,7 @@ async function removeById(req, res, next) {
   res.status(200).json(contactById);
 }
 
-async function updateById(req, res, next) {
+async function updateById(req, res) {
   const updatedContact = await Contact.findOneAndUpdate(
     {
       _id: req.params.contactId,
@@ -44,7 +44,7 @@ async function updateById(req, res, next) {
   res.status(200).json(updatedContact);
 }
 
-async function updateFavoriteById(req, res, next) {
+async function updateFavoriteById(req, res) {
   const updatedContact = await Contact.findOneAndUpdate(
     {
       _id: req.params.contactId,

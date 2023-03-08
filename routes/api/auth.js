@@ -10,11 +10,8 @@ router.post('/register', validateBody(userSchemas.registerUser), ctrl.register);
 
 router.post('/login', validateBody(userSchemas.loginUser), ctrl.login);
 
-router.get('/current', isTokenValid, (req, res) => {
-  res.json(req.user);
-});
-router.get('/logout', isTokenValid, (req, res) => {
-  res.json(req.user);
-});
+router.post('/logout', isTokenValid, ctrl.logout);
+
+router.get('/current', isTokenValid, ctrl.current);
 
 module.exports = router;

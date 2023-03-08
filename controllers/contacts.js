@@ -6,9 +6,9 @@ async function getAll(req, res) {
   const { page = 1, limit = 1, favorite } = req.query;
   const skip = (page - 1) * limit;
 
-  if (favorite === 'true' || favorite === 'false') {
+  if (favorite === 'true') {
     const contactsAll = await Contact.find(
-      { owner: _id, favorite },
+      { owner: _id, favorite: true },
       '-createdAt -updatedAt',
       { skip, limit }
     ).populate('owner');

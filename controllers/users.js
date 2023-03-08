@@ -1,7 +1,10 @@
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const { HttpError, ctrlWrapper } = require('../helpers');
 const { User } = require('../models/users');
+
+const { SECRET_KEY } = process.env;
 
 const register = async (req, res) => {
   const { email, password } = req.body;
@@ -22,8 +25,37 @@ const register = async (req, res) => {
   });
 };
 
-// const login = async (req, res) => {};
+const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  const userExist = await User.findOne({ email });
+
+  if (!userExist) {
+    throw HttpError(401, 'Email or password invalid');
+  }
+
+  const isPassValid = await bcrypt.compare(password, userExist.password);
+
+  if (!isPassValid) {
+    throw HttpError(401, 'Email or password invalid');
+  }
+
+  const payload = { _id: userExist._id };
+
+  const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '24h' });
+
+  await User.findOneAndUpdate({ _id: userExist._id }, { token });
+
+  res.status(200).json({
+    token,
+    user: {
+      email: userExist.email,
+      subscription: userExist.subscription,
+    },
+  });
+};
 
 module.exports = {
   register: ctrlWrapper(register),
+  login: ctrlWrapper(login),
 };

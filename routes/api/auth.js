@@ -14,4 +14,11 @@ router.post('/logout', isTokenValid, ctrl.logout);
 
 router.get('/current', isTokenValid, ctrl.current);
 
+router.patch(
+  '/subscription',
+  validateBody(userSchemas.updateSubscription),
+  isTokenValid,
+  ctrl.updateSubscription
+);
+
 module.exports = router;

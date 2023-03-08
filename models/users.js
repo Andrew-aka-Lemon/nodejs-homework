@@ -3,6 +3,8 @@ const { Schema, model } = require('mongoose');
 
 const emailRegexp = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
+const typesOfSubscriptions = ['starter', 'pro', 'business'];
+
 const userSchema = Schema(
   {
     password: {
@@ -36,9 +38,14 @@ const loginUser = Joi.object({
   password: Joi.string().required().min(6),
 });
 
+const updateSubscription = Joi.object({
+  subscription: Joi.string().valid(...typesOfSubscriptions),
+});
+
 const userSchemas = {
   registerUser,
   loginUser,
+  updateSubscription,
 };
 
 const User = model('user', userSchema);

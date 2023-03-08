@@ -15,8 +15,8 @@ const isTokenValid = async (req, res, next) => {
   }
 
   try {
-    const { _id } = jwt.verify(token, SECRET_KEY);
-    const user = await User.findById(_id);
+    const { id } = jwt.verify(token, SECRET_KEY);
+    const user = await User.findById(id);
 
     if (!user || !user.token || user.token !== token) {
       next(HttpError(401, 'Unauthorized'));

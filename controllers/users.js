@@ -40,7 +40,7 @@ const login = async (req, res) => {
     throw HttpError(401, 'Email or password invalid');
   }
 
-  const payload = { _id: userExist._id };
+  const payload = { id: userExist._id };
 
   const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '24h' });
 
@@ -68,9 +68,25 @@ const current = async (req, res) => {
   res.status(200).json({ email, subscription });
 };
 
+const updateSubscription = async (req, res) => {
+  const { subscription } = req.body;
+  const { _id } = req.user;
+  const user = await User.findByIdAndUpdate(
+    { _id },
+    {
+      subscription,
+    }
+  );
+
+  user.subscription = subscription;
+
+  res.status(201).json(user);
+};
+
 module.exports = {
   register: ctrlWrapper(register),
   login: ctrlWrapper(login),
   logout: ctrlWrapper(logout),
   current: ctrlWrapper(current),
+  updateSubscription: ctrlWrapper(updateSubscription),
 };

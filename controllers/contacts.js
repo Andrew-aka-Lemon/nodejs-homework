@@ -14,15 +14,15 @@ async function getAll(req, res) {
     ).populate('owner');
 
     res.status(200).json(contactsAll);
+  } else {
+    const contactsAll = await Contact.find(
+      { owner: _id },
+      '-createdAt -updatedAt',
+      { skip, limit }
+    ).populate('owner');
+
+    res.status(200).json(contactsAll);
   }
-
-  const contactsAll = await Contact.find(
-    { owner: _id },
-    '-createdAt -updatedAt',
-    { skip, limit }
-  ).populate('owner');
-
-  res.status(200).json(contactsAll);
 }
 
 async function getById(req, res) {

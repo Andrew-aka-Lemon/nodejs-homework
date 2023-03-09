@@ -1,14 +1,39 @@
 const { HttpError, ctrlWrapper } = require('../helpers');
-const { Contact } = require('../models/contactsSchema');
+const { Contact } = require('../models/contacts');
 
 async function getAll(req, res) {
-  const contactsAll = await Contact.find();
+  const { _id } = req.user;
+  const { page = 1, limit = 1, favorite } = req.query;
+  const skip = (page - 1) * limit;
 
-  res.status(200).json(contactsAll);
+  if (favorite === 'true') {
+    const contactsAll = await Contact.find(
+      { owner: _id, favorite: true },
+      '-createdAt -updatedAt',
+      { skip, limit }
+    ).populate('owner');
+
+    res.status(200).json(contactsAll);
+  } else {
+    const contactsAll = await Contact.find(
+      { owner: _id },
+      '-createdAt -updatedAt',
+      { skip, limit }
+    ).populate('owner');
+
+    res.status(200).json(contactsAll);
+  }
 }
 
-async function getById(req, res, next) {
-  const contactById = await Contact.findById(req.params.contactId);
+async function getById(req, res) {
+  const { _id } = req.user;
+  const contactById = await Contact.find(
+    {
+      owner: _id,
+      _id: req.params.contactId,
+    },
+    '-createdAt -updatedAt'
+  );
 
   if (contactById === null) {
     throw HttpError(404, 'Not found');
@@ -16,13 +41,14 @@ async function getById(req, res, next) {
   res.status(200).json(contactById);
 }
 
-async function addContact(req, res, next) {
+async function addContact(req, res) {
+  req.body.owner = req.user._id;
   const newContact = await Contact.create(req.body);
 
   res.status(201).json(newContact);
 }
 
-async function removeById(req, res, next) {
+async function removeById(req, res) {
   const contactById = await Contact.findOneAndRemove({
     _id: req.params.contactId,
   });
@@ -33,7 +59,7 @@ async function removeById(req, res, next) {
   res.status(200).json(contactById);
 }
 
-async function updateById(req, res, next) {
+async function updateById(req, res) {
   const updatedContact = await Contact.findOneAndUpdate(
     {
       _id: req.params.contactId,
@@ -44,7 +70,7 @@ async function updateById(req, res, next) {
   res.status(200).json(updatedContact);
 }
 
-async function updateFavoriteById(req, res, next) {
+async function updateFavoriteById(req, res) {
   const updatedContact = await Contact.findOneAndUpdate(
     {
       _id: req.params.contactId,

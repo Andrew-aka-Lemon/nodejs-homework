@@ -1,11 +1,7 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
 
-// mongoose.Promise = global.Promise;
-
 const app = require('./app');
-
-// mongoose.Promise = global.Promise;
 
 mongoose
   .connect(process.env.DB_HOST)

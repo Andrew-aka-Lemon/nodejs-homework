@@ -1,12 +1,23 @@
 const express = require('express');
+const path = require('path');
+const multer = require('multer');
 
 const ctrl = require('../../controllers/users');
 const { validateBody, isTokenValid } = require('../../middlewares');
 const { userSchemas } = require('../../models/users');
 
+const tempDIR = path.join(__dirname, '../', '../', 'temp');
+
+const upload = multer({ dest: tempDIR });
+
 const router = express.Router();
 
-router.post('/register', validateBody(userSchemas.registerUser), ctrl.register);
+router.post(
+  '/register',
+  upload.single('avatarURL'),
+  validateBody(userSchemas.registerUser),
+  ctrl.register
+);
 
 router.post('/login', validateBody(userSchemas.loginUser), ctrl.login);
 
@@ -20,5 +31,7 @@ router.patch(
   isTokenValid,
   ctrl.updateSubscription
 );
+
+router.patch('/avatar', isTokenValid, ctrl.updateAvatar);
 
 module.exports = router;

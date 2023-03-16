@@ -1,13 +1,14 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const gravatar = require('gravatar');
-const fs = require('fs');
-const multer = require('multer');
+const fs = require('fs/promises');
+const path = require('path');
 
 const { HttpError, ctrlWrapper } = require('../helpers');
 const { User } = require('../models/users');
 
 const { SECRET_KEY } = process.env;
+const pictureFolder = path.join(__dirname, '../', 'public', 'avatars');
 
 const register = async (req, res) => {
   const { email, password } = req.body;
@@ -94,7 +95,26 @@ const updateSubscription = async (req, res) => {
   res.status(201).json(user);
 };
 
-const updateAvatar = async (req, res) => {};
+const updateAvatar = async (req, res) => {
+  const { _id } = req.user;
+  const { path: temporaryName, originalname } = req.file;
+  const newName = `${_id}_${originalname}`;
+
+  const newPath = path.join(pictureFolder, newName);
+  console.log(temporaryName);
+  console.log(newPath);
+
+  await fs.rename(temporaryName, newPath);
+
+  const avatarURL = path.join('avatars', newName);
+
+  await User.findByIdAndUpdate({ _id }, { avatarURL });
+
+  res.status(201).json({
+    message: 'avatar added',
+    avatarURL,
+  });
+};
 
 module.exports = {
   register: ctrlWrapper(register),

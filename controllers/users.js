@@ -1,10 +1,15 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const gravatar = require('gravatar');
+const fs = require('fs/promises');
+const path = require('path');
+const Jimp = require('jimp');
 
 const { HttpError, ctrlWrapper } = require('../helpers');
 const { User } = require('../models/users');
 
 const { SECRET_KEY } = process.env;
+const pictureFolder = path.join(__dirname, '../', 'public', 'avatars');
 
 const register = async (req, res) => {
   const { email, password } = req.body;
@@ -15,12 +20,20 @@ const register = async (req, res) => {
   }
   const hashPass = await bcrypt.hash(password, 10);
 
+  if (!req.body.avatarURL) {
+    req.body.avatarURL = gravatar.url(req.body.email);
+  } else {
+    // req.file - аватарка
+    // тут треба додати переміщення аватарки в папку аватарок
+  }
+
   const newUser = await User.create({ ...req.body, password: hashPass });
 
   res.status(201).json({
     user: {
       email: newUser.email,
       subscription: newUser.subscription,
+      avatarURL: newUser.avatarURL,
     },
   });
 };
@@ -83,10 +96,40 @@ const updateSubscription = async (req, res) => {
   res.status(201).json(user);
 };
 
+const updateAvatar = async (req, res) => {
+  const { _id } = req.user;
+  const { path: temporaryName, originalname } = req.file;
+
+  const newName = `${_id}_${originalname}`;
+
+  const newPath = path.join(pictureFolder, newName);
+
+  Jimp.read(temporaryName)
+    .then(picture => {
+      return picture.resize(250, 250).write(newPath);
+    })
+    .catch(err => {
+      console.error(err);
+    });
+
+  await fs.unlink(temporaryName);
+  // await fs.rename(temporaryName, newPath);
+
+  const avatarURL = path.join('avatars', newName);
+
+  await User.findByIdAndUpdate({ _id }, { avatarURL });
+
+  res.status(201).json({
+    message: 'avatar added',
+    avatarURL,
+  });
+};
+
 module.exports = {
   register: ctrlWrapper(register),
   login: ctrlWrapper(login),
   logout: ctrlWrapper(logout),
   current: ctrlWrapper(current),
   updateSubscription: ctrlWrapper(updateSubscription),
+  updateAvatar: ctrlWrapper(updateAvatar),
 };

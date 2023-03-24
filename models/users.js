@@ -24,6 +24,7 @@ const userSchema = Schema(
       default: 'starter',
     },
     token: String,
+    avatarURL: String,
   },
   { versionKey: false, timeStamps: true }
 );
@@ -31,6 +32,7 @@ const userSchema = Schema(
 const registerUser = Joi.object({
   email: Joi.string().required().pattern(emailRegexp),
   password: Joi.string().required().min(6),
+  avatarURL: Joi.string(),
 });
 
 const loginUser = Joi.object({

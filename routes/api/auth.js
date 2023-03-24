@@ -1,12 +1,17 @@
 const express = require('express');
 
 const ctrl = require('../../controllers/users');
-const { validateBody, isTokenValid } = require('../../middlewares');
+const { validateBody, isTokenValid, upload } = require('../../middlewares');
 const { userSchemas } = require('../../models/users');
 
 const router = express.Router();
 
-router.post('/register', validateBody(userSchemas.registerUser), ctrl.register);
+router.post(
+  '/register',
+  upload.single('avatarURL'),
+  validateBody(userSchemas.registerUser),
+  ctrl.register
+);
 
 router.post('/login', validateBody(userSchemas.loginUser), ctrl.login);
 
@@ -19,6 +24,13 @@ router.patch(
   validateBody(userSchemas.updateSubscription),
   isTokenValid,
   ctrl.updateSubscription
+);
+
+router.patch(
+  '/avatar',
+  isTokenValid,
+  upload.single('avatarURL'),
+  ctrl.updateAvatar
 );
 
 module.exports = router;

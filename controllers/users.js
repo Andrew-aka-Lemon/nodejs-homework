@@ -134,6 +134,35 @@ const updateAvatar = async (req, res) => {
   });
 };
 
+const userVerify = async (req, res) => {
+  const { verificationToken } = req.params;
+
+  const user = await User.findOneAndUpdate(
+    { verificationToken },
+    { verify: true, verificationToken: null }
+  );
+
+  if (!user) {
+    res.status(400).json({ message: 'Verification has already been passed' });
+  }
+
+  res.status(201).json({ message: `${user.email} verified !` });
+};
+
+const userReVerify = async (req, res) => {
+  const { email } = req.body;
+
+  const user = User.findOne({ email });
+
+  if (user.verify) {
+    res.status(400).json({ message: 'Verification has already been passed' });
+  }
+
+  await sendEmail(email, user.verificationToken);
+
+  res.status(201).json({ message: `Verification mail sent on ${email}` });
+};
+
 module.exports = {
   register: ctrlWrapper(register),
   login: ctrlWrapper(login),
@@ -141,4 +170,6 @@ module.exports = {
   current: ctrlWrapper(current),
   updateSubscription: ctrlWrapper(updateSubscription),
   updateAvatar: ctrlWrapper(updateAvatar),
+  userVerify: ctrlWrapper(userVerify),
+  userReVerify: ctrlWrapper(userReVerify),
 };

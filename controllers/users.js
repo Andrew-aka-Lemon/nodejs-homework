@@ -5,8 +5,9 @@ const fs = require('fs/promises');
 const path = require('path');
 const Jimp = require('jimp');
 
-const { HttpError, ctrlWrapper } = require('../helpers');
+const { HttpError, ctrlWrapper, sendEmail } = require('../helpers');
 const { User } = require('../models/users');
+const { nanoid } = require('nanoid');
 
 const { SECRET_KEY } = process.env;
 const pictureFolder = path.join(__dirname, '../', 'public', 'avatars');
@@ -22,12 +23,16 @@ const register = async (req, res) => {
 
   if (!req.body.avatarURL) {
     req.body.avatarURL = gravatar.url(req.body.email);
-  } else {
-    // req.file - аватарка
-    // тут треба додати переміщення аватарки в папку аватарок
   }
+  const verificationToken = nanoid();
 
-  const newUser = await User.create({ ...req.body, password: hashPass });
+  const newUser = await User.create({
+    ...req.body,
+    password: hashPass,
+    verificationToken,
+  });
+
+  await sendEmail(email, verificationToken);
 
   res.status(201).json({
     user: {
@@ -51,6 +56,10 @@ const login = async (req, res) => {
 
   if (!isPassValid) {
     throw HttpError(401, 'Email or password invalid');
+  }
+
+  if (!userExist.verify) {
+    throw HttpError(401, 'Email is not verified !');
   }
 
   const payload = { id: userExist._id };

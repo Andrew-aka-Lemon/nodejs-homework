@@ -5,8 +5,9 @@ const fs = require('fs/promises');
 const path = require('path');
 const Jimp = require('jimp');
 
-const { HttpError, ctrlWrapper } = require('../helpers');
+const { HttpError, ctrlWrapper, sendEmail } = require('../helpers');
 const { User } = require('../models/users');
+const { nanoid } = require('nanoid');
 
 const { SECRET_KEY } = process.env;
 const pictureFolder = path.join(__dirname, '../', 'public', 'avatars');
@@ -22,12 +23,16 @@ const register = async (req, res) => {
 
   if (!req.body.avatarURL) {
     req.body.avatarURL = gravatar.url(req.body.email);
-  } else {
-    // req.file - аватарка
-    // тут треба додати переміщення аватарки в папку аватарок
   }
+  const verificationToken = nanoid();
 
-  const newUser = await User.create({ ...req.body, password: hashPass });
+  const newUser = await User.create({
+    ...req.body,
+    password: hashPass,
+    verificationToken,
+  });
+
+  await sendEmail(email, verificationToken);
 
   res.status(201).json({
     user: {
@@ -51,6 +56,10 @@ const login = async (req, res) => {
 
   if (!isPassValid) {
     throw HttpError(401, 'Email or password invalid');
+  }
+
+  if (!userExist.verify) {
+    throw HttpError(401, 'Email is not verified !');
   }
 
   const payload = { id: userExist._id };
@@ -125,6 +134,36 @@ const updateAvatar = async (req, res) => {
   });
 };
 
+const userVerify = async (req, res) => {
+  const { verificationToken } = req.params;
+
+  const user = await User.findOneAndUpdate(
+    { verificationToken },
+    { verify: true, verificationToken: null }
+  );
+
+  if (!user) {
+    res.status(400).json({ message: 'Verification has already been passed' });
+    return;
+  }
+
+  res.status(201).json({ message: `${user.email} verified !` });
+};
+
+const userReVerify = async (req, res) => {
+  const { email } = req.body;
+
+  const user = User.findOne({ email });
+
+  if (user.verify) {
+    res.status(400).json({ message: 'Verification has already been passed' });
+  }
+
+  await sendEmail(email, user.verificationToken);
+
+  res.status(201).json({ message: `Verification mail sent on ${email}` });
+};
+
 module.exports = {
   register: ctrlWrapper(register),
   login: ctrlWrapper(login),
@@ -132,4 +171,6 @@ module.exports = {
   current: ctrlWrapper(current),
   updateSubscription: ctrlWrapper(updateSubscription),
   updateAvatar: ctrlWrapper(updateAvatar),
+  userVerify: ctrlWrapper(userVerify),
+  userReVerify: ctrlWrapper(userReVerify),
 };

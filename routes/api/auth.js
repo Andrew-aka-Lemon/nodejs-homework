@@ -19,6 +19,14 @@ router.post('/logout', isTokenValid, ctrl.logout);
 
 router.get('/current', isTokenValid, ctrl.current);
 
+router.get('/verify/:verificationToken', ctrl.userVerify);
+
+router.post(
+  '/verify/re-send',
+  validateBody(userSchemas.resendVerify),
+  ctrl.userReVerify
+);
+
 router.patch(
   '/subscription',
   validateBody(userSchemas.updateSubscription),
